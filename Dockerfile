@@ -36,6 +36,8 @@ RUN tar -zx -C /kafka --strip-components=1 -f ${KAFKA_RELEASE_ARCHIVE} && \
 
 ADD config /kafka/config
 ADD start.sh /start.sh
+ADD https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.1.0/jmx_prometheus_javaagent-0.1.0.jar /kafka/jmx_prometheus_javaagent-0.1.0.jar
+ADD kafka_prometheus.yml /kafka/kafka_prometheus.yml
 
 # Set up a user to run Kafka
 RUN groupadd kafka && \
@@ -43,7 +45,9 @@ RUN groupadd kafka && \
   chown -R kafka:kafka /kafka /data /logs
 USER kafka
 ENV PATH /kafka/bin:$PATH
+ENV KAFKA_OPTS -javaagent:/kafka/jmx_prometheus_javaagent-0.1.0.jar=7071:/kafka/kafka_prometheus.yml
 WORKDIR /kafka
+EXPOSE 7071
 
 # broker, jmx
 EXPOSE 9092 ${JMX_PORT}
